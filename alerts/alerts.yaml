@@ -82,12 +82,13 @@ spec:
     rules:
     - alert: SREMiniHPAAtMax
       expr: |
-        kube_hpa_status_current_replicas{namespace="sre-mini",horizontalpodautoscaler="sre-mini-hpa"}
+        kube_horizontalpodautoscaler_status_current_replicas{namespace="sre-mini",horizontalpodautoscaler="sre-mini-hpa"}
         >=
-        kube_hpa_spec_max_replicas{namespace="sre-mini",horizontalpodautoscaler="sre-mini-hpa"}
-      for: 10m
+        kube_horizontalpodautoscaler_spec_max_replicas{namespace="sre-mini",horizontalpodautoscaler="sre-mini-hpa"}
+      for: 10s
       labels:
         severity: warning
         category: saturation
       annotations:
         summary: "HPA stuck at max replicas"
+

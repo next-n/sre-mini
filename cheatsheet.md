@@ -210,11 +210,6 @@ kubectl delete -f alerts/alerts.yaml
 kubectl delete -f k8s.yaml
 ```
 
-Your snippet **doesn’t include the k3d cluster name** (that output is just the HPA watch). So in Step 12 I’ll make it **bulletproof**: first we **discover the cluster name**, then we add a node, then we raise `maxReplicas`, then we follow a banking-style protocol.
-
-Paste this as **Step 12** in `cheatsheet.md`:
-
----
 
 ## 12) SEV-1 protocol drill — Capacity exhaustion (HPA at max)
 
@@ -270,7 +265,7 @@ kubectl -n sre-mini get hpa -w
 kubectl -n sre-mini rollout pause deploy/sre-mini
 ```
 
-Roles (banking standard):
+Roles:
 
 * IC (Incident Commander)
 * Ops (K8s/infra)
@@ -353,7 +348,7 @@ Confirm:
 
 ---
 
-### 12.6 Stand down + postmortem (banking expectations)
+### 12.6 Stand down + postmortem 
 
 ```bash
 kubectl -n sre-mini rollout resume deploy/sre-mini

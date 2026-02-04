@@ -293,7 +293,7 @@ What you’re proving:
 
 ### 12.4 Containment — expand capacity (drill uses k3d “add node”)
 
-#### A) Add a node (simulate bank “node autoscale happened / approved”)
+#### A) Add a node (simulate production “node autoscale happened / approved”)
 
 **Find your k3d cluster name:**
 

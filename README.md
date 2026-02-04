@@ -32,7 +32,7 @@ It is intentionally small, but every control in `k8s.yaml` is mapped to a concre
 - `GET /work/cpu`: simulated workload cpu stress for hpa testing.
 - `GET /work/latency`: simulated workload (2s latency) for autoscaling/latency testing.
 - `GET /metrics`: Prometheus metrics.
-- `GET /panic`: 500 path to test alert/promethus
+- `GET /panic`: 500 path to test alert/prometheus
 - `GET /crash`: intentional crash path to validate self-healing.
 
 ## `k8s.yaml` deep dive with reliability rationale

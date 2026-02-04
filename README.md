@@ -14,11 +14,13 @@ It is intentionally small, but every control in `k8s.yaml` is mapped to a concre
 - `main.go`: Go HTTP service with health/readiness probes, graceful shutdown, metrics, and failure toggles.
 - `k8s.yaml`: namespace, service account, deployment, service, PDB, HPA, ingress, and ServiceMonitor.
 - `alerts/alerts.yaml`: Prometheus alert rules.
+- `alerts/alerts-drill.yaml`: Prometheus alert rules for drill/test.
 - `runbooks/incident.md`: operator response playbooks.
 - `docs/slo.md`: SLI/SLO definitions and error-budget policy.
 - `postmortems/template.md`: blameless postmortem template.
 - `.github/workflows/ci.yml`: CI gates for quality, security, and supply-chain checks.
 - `Dockerfile`: multi-stage build to distroless non-root runtime image.
+- `cheatsheet.md`: running this repo including solving an incident.
 
 ## Service behavior (what is being protected)
 
@@ -26,9 +28,12 @@ It is intentionally small, but every control in `k8s.yaml` is mapped to a concre
 - `GET /readyz`: readiness endpoint.
 - `GET|POST /fail/ready`: flips readiness to false.
 - `GET|POST /recover/ready`: restores readiness to true.
-- `GET /work`: simulated workload (2s latency) for autoscaling/latency testing.
+- `GET /work`: just simulate success work.
+- `GET /work/cpu`: simulated workload cpu stress for hpa testing.
+- `GET /work/latency`: simulated workload (2s latency) for autoscaling/latency testing.
 - `GET /metrics`: Prometheus metrics.
-- `GET /panic`: intentional crash path to validate self-healing.
+- `GET /panic`: 500 path to test alert/promethus
+- `GET /crash`: intentional crash path to validate self-healing.
 
 ## `k8s.yaml` deep dive with reliability rationale
 

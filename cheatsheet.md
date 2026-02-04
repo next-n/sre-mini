@@ -1,5 +1,5 @@
 # sre-mini test cheatsheet (Linux/Ubuntu)
-
+# Skip to step 12 for Incident Drill
 Use this file to validate all major features quickly on Linux/Ubuntu.
 
 > Run all drills in a non-production environment.
@@ -37,6 +37,7 @@ docker rm -f "$cid"
 ```bash
 # optional: create TLS secret used by ingress
 # kubectl -n sre-mini create secret tls sre-mini-tls --cert=tls.crt --key=tls.key
+# note, current yaml use public image of sre-mini from my docker hub
 
 kubectl apply -f k8s.yaml
 kubectl apply -f alerts/alerts.yaml

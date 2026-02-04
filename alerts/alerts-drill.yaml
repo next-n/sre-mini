@@ -1,0 +1,96 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: sre-mini-alerts-drill
+  namespace: monitoring
+  labels:
+    release: kps
+spec:
+  groups:
+  - name: sre-mini-drill-slo
+    rules:
+    - alert: SREMiniErrorBudgetBurnFast
+      expr: |
+        (
+          (
+            sum(rate(http_requests_total{code=~"5.*"}[30s]))
+            /
+            clamp_min(sum(rate(http_requests_total[30s])), 0.001)
+          ) > 0.02
+        )
+        and
+        (
+          (
+            sum(rate(http_requests_total{code=~"5.*"}[1m]))
+            /
+            clamp_min(sum(rate(http_requests_total[1m])), 0.001)
+          ) > 0.02
+        )
+        and
+        sum(rate(http_requests_total[30s])) > 0.1
+      for: 5s
+      labels:
+        severity: critical
+        category: availability
+      annotations:
+        summary: "Drill: error budget burning fast"
+        description: "Rapid 5xx spike in short windows."
+    - alert: SREMiniErrorBudgetBurnSlow
+      expr: |
+        (
+          (
+            sum(rate(http_requests_total{code=~"5.*"}[1m]))
+            /
+            clamp_min(sum(rate(http_requests_total[1m])), 0.001)
+          ) > 0.01
+        )
+        and
+        (
+          (
+            sum(rate(http_requests_total{code=~"5.*"}[3m]))
+            /
+            clamp_min(sum(rate(http_requests_total[3m])), 0.001)
+          ) > 0.01
+        )
+        and
+        sum(rate(http_requests_total[1m])) > 0.1
+      for: 10s
+      labels:
+        severity: warning
+        category: availability
+      annotations:
+        summary: "Drill: error budget burning slowly"
+        description: "Sustained elevated 5xx ratio."
+    - alert: SREMiniHighLatency
+      expr: |
+        histogram_quantile(
+          0.95,
+          sum by (le) (
+            rate(http_request_duration_seconds_bucket{path="/work"}[30s])
+          )
+        ) > 0.3
+      for: 10s
+      labels:
+        severity: warning
+        category: latency
+      annotations:
+        summary: "Drill: p95 latency above target"
+        description: "Latency remains above threshold."
+
+    
+  - name: sre-mini-capacity-drill
+    rules:
+    - alert: SREMiniHPAAtMax
+      expr: |
+        kube_horizontalpodautoscaler_status_current_replicas{namespace="sre-mini",horizontalpodautoscaler="sre-mini-hpa"}
+        >=
+        kube_horizontalpodautoscaler_spec_max_replicas{namespace="sre-mini",horizontalpodautoscaler="sre-mini-hpa"}
+      for: 10s
+      labels:
+        severity: warning
+        category: saturation
+      annotations:
+        summary: "HPA stuck at max replicas"
+
+  
+    

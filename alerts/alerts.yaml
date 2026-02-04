@@ -1,0 +1,93 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: sre-mini-alerts
+  namespace: monitoring
+  labels:
+    release: kps
+spec:
+  groups:
+  - name: sre-mini-slo
+    rules:
+    - alert: SREMiniErrorBudgetBurnFast
+      expr: |
+        (
+          (
+            sum(rate(http_requests_total{code=~"5.*"}[5m]))
+            /
+            clamp_min(sum(rate(http_requests_total[5m])), 0.001)
+          ) > 0.0144
+        )
+        and
+        (
+          (
+            sum(rate(http_requests_total{code=~"5.*"}[1h]))
+            /
+            clamp_min(sum(rate(http_requests_total[1h])), 0.001)
+          ) > 0.0144
+        )
+        and
+        sum(rate(http_requests_total[5m])) > 0.1
+      for: 2m
+      labels:
+        severity: critical
+        category: availability
+      annotations:
+        summary: "Error budget burning fast"
+        description: "Projected burn consumes error budget quickly (multi-window, multi-burn-rate)."
+
+    - alert: SREMiniErrorBudgetBurnSlow
+      expr: |
+        (
+          (
+            sum(rate(http_requests_total{code=~"5.*"}[30m]))
+            /
+            clamp_min(sum(rate(http_requests_total[30m])), 0.001)
+          ) > 0.006
+        )
+        and
+        (
+          (
+            sum(rate(http_requests_total{code=~"5.*"}[6h]))
+            /
+            clamp_min(sum(rate(http_requests_total[6h])), 0.001)
+          ) > 0.006
+        )
+        and
+        sum(rate(http_requests_total[30m])) > 0.1
+      for: 15m
+      labels:
+        severity: warning
+        category: availability
+      annotations:
+        summary: "Error budget burning steadily"
+        description: "Sustained error-rate burn indicates elevated reliability risk."
+
+    - alert: SREMiniHighLatency
+      expr: |
+        histogram_quantile(
+          0.95,
+          sum by (le) (
+            rate(http_request_duration_seconds_bucket{path="/work"}[5m])
+          )
+        ) > 0.3
+      for: 5m
+      labels:
+        severity: warning
+        category: latency
+      annotations:
+        summary: "p95 latency above SLO"
+
+  - name: sre-mini-capacity
+    rules:
+    - alert: SREMiniHPAAtMax
+      expr: |
+        kube_hpa_status_current_replicas{namespace="sre-mini",horizontalpodautoscaler="sre-mini-hpa"}
+        >=
+        kube_hpa_spec_max_replicas{namespace="sre-mini",horizontalpodautoscaler="sre-mini-hpa"}
+      for: 10m
+      labels:
+        severity: warning
+        category: saturation
+      annotations:
+        summary: "HPA stuck at max replicas"
